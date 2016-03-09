@@ -1,0 +1,31 @@
+header{
+  background-color: #2196F3;
+  color: white;
+  font-size: 20px;
+  font-weight: bolder;
+  margin-bottom: 10px;
+}
+#save, #add{
+  background-color: #2196F3;
+  border:none;
+  color: white;
+  padding: 8px 15px;
+  margin-top: 10px;
+  margin-right: 10px;
+}
+#add{
+  background-color: #4CAF50;
+}
+
+.fund{
+  width: 100%;
+  margin: 5px 0px;
+}
+
+.fund .key{
+  width: 200px;
+}
+
+.fund .owned{
+  margin-left: 10px;
+}

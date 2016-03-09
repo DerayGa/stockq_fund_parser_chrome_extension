@@ -1,0 +1,20 @@
+{
+  "save": {
+    "message": "儲存"
+  },
+  "add_fund": {
+    "message": "新增基金..."
+  },
+  "fund_list": {
+    "message": "基金清單"
+  },
+  "options_title": {
+    "message": "StockQ 基金分析擴充功能選項"
+  },
+  "options": {
+    "message": "擴充功能選項"
+  },
+  "owned": {
+    "message": "持有"
+  }
+}

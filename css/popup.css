@@ -1,0 +1,61 @@
+.fundInfo{
+	width: 535px;
+}
+
+.fund{
+	border: 2px solid #9E9E9E;
+	padding:5px;
+	display: inline-block;
+	width: 250px;
+	margin: 1px;
+	text-align: center;
+	cursor: pointer;
+}
+.fund.have{
+	border-color:#0087dc;
+}
+.info{
+	color:#424242;
+}
+.info.green .diff{
+	color:#4CAF50;
+}
+.info.red .diff{
+	color:#F44336;
+}
+.title{
+	font-size: 16px;
+	text-align: center;
+	font-weight: bold;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+.value{
+	font-size: 22px;
+	display: inline-block;
+	margin: 0px;
+	width: 45%;
+}
+.diff{
+	font-size: 20px;
+	display: inline-block;
+	margin: 0px;
+	width: 55%;
+	text-align: left;
+}
+.update{
+	display: inline-block;
+	margin-top: 5px;
+	width: 100%;
+	font-size: 12px;
+	text-align: right;
+}
+footer {
+	text-align: center;
+	margin-top:5px;
+}
+footer a{
+	display: inline-block;
+	color: #2196F3;
+}

@@ -1,0 +1,20 @@
+{
+  "save": {
+    "message": "Save"
+  },
+  "add_fund": {
+    "message": "Add fund ..."
+  },
+  "fund_list": {
+    "message": "Fund List"
+  },
+  "options_title": {
+    "message": "StockQ Fund Parser Extension Options"
+  },
+  "options": {
+    "message": "Extension Options"
+  },
+  "owned": {
+    "message": "Owned"
+  }
+}

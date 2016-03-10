@@ -38,7 +38,7 @@ function updateFundDiv(fundDiv, title, raw) {
     symbol = '▼';
   }
 
-  $('.diff', fundDiv).text(symbol + Math.abs(diff) + '(' + Math.abs(percent) + ')');
+  $('.diff', fundDiv).text(symbol + Math.abs(diff) + '(' + Math.abs(percent) + '%)');
 
   $(fundDiv).show();
 }

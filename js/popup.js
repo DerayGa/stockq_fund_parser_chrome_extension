@@ -21,7 +21,6 @@ function updateFundDiv(fundDiv, title, raw) {
 
   var value = $(tds[1]).text();
   $('.value', fundDiv).text(value);
-  console.log(value);
 
   var diff = parseFloat($(tds[2]).text(), 10);
   var percent = parseFloat($(tds[3]).text(), 10);
@@ -55,7 +54,31 @@ function restore_options(callback) {
   }, callback);
 }
 
-function loadFund(link, fund){
+function restore_fund(key, callback) {
+  var json = {};
+  json[key] = {};
+  chrome.storage.sync.get(json, callback);
+}
+
+function getYesterday() {
+  var now = new Date();
+  var day = now.getDay();
+
+  var num = 1;
+  if (day == 0)
+    num = 2;
+  else if (day == 1)
+    num = 3;
+
+  var yesterday = new Date(now.getTime() - 1000 * 60 * 60 * 24 * num);
+  var yyyy = yesterday.getFullYear();
+  var mm = yesterday.getMonth() + 1;
+  var dd = yesterday.getDate();
+
+  return yyyy + '/' + mm + '/' + dd;
+}
+
+function loadFund(link, fund) {
   var fundDiv = createFundDiv();
   $(fundDiv).hide();
 
@@ -67,25 +90,51 @@ function loadFund(link, fund){
   $(fundDiv).click(function() {
     openTab(link + fund.key);
   });
+  //--------------
+  restore_fund(fund.key, function(items) {
+    var cache = items[fund.key];
+    var yesterday = getYesterday();
 
-  $.ajax({
-    url: link + fund.key,
-    type: 'GET',
-    success: function(data) {
-      var i = data.indexOf('<tr class=\'row2\'>');
-      var j = data.indexOf('</tr>', i) + 5;
-      var raw = data.substring(i, j);
-
-      var i = data.indexOf('<font color="#666666"><h1>');
-      var j = data.indexOf('</h1></font>', i) + 12;
-      var title = data.substring(i, j);
-
-      updateFundDiv(fundDiv, title, raw);
-    },
-    /*error: function(data) {
-        console.log(data);
-    }*/
+    if (cache[yesterday]){
+      loadByCache(cache.title, cache[yesterday]);
+    } else {
+      loadByAJAX(cache, yesterday);
+    }
   });
+
+  //--------------
+  function loadByCache(title, raw) {
+    updateFundDiv(fundDiv, title, raw);
+  }
+  //--------------
+  function loadByAJAX(cache, yesterday) {
+    $.ajax({
+      url: link + fund.key,
+      type: 'GET',
+      success: function(data) {
+        var i = data.indexOf('<tr class=\'row2\'>');
+        var j = data.indexOf('</tr>', i) + 5;
+        var raw = data.substring(i, j);
+
+        var i = data.indexOf('<font color="#666666"><h1>');
+        var j = data.indexOf('</h1></font>', i) + 12;
+        var title = data.substring(i, j);
+
+        updateFundDiv(fundDiv, title, raw);
+
+        //save
+        cache.title = title;
+        cache[yesterday] = raw;
+        var json = {};
+        json[fund.key] = cache;
+        chrome.storage.sync.set(json, function() {
+        });
+      },
+      /*error: function(data) {
+          console.log(data);
+      }*/
+    });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -93,19 +142,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
   $('footer .options').html(chrome.i18n.getMessage("options"));
 
-  restore_options(function(items){
+  restore_options(function(items) {
     var owned = [];
     var other = [];
-    $.each(items.fundList, function(index, fund){
-      if(!fund.key) return;
+    $.each(items.fundList, function(index, fund) {
+      if (!fund.key) return;
 
-      if(fund.owned)
+      if (fund.owned)
         owned.push(fund);
       else
         other.push(fund);
     });
 
-    $.each(owned.concat(other), function(index, fund){
+    $.each(owned.concat(other), function(index, fund) {
       loadFund(link, fund);
     });
   });

@@ -38,6 +38,8 @@ function updateFundDiv(fundDiv, title, raw) {
   }
 
   $('.diff', fundDiv).text(symbol + Math.abs(diff) + '(' + Math.abs(percent) + '%)');
+
+  return update.trim();
 }
 
 function openTab(link) {
@@ -74,6 +76,10 @@ function getYesterday() {
   var dd = yesterday.getDate();
 
   return yyyy + '/' + mm + '/' + dd;
+}
+
+function getFundUpdateDate(raw) {
+123
 }
 
 function loadFund(link, fund) {
@@ -117,12 +123,12 @@ function loadFund(link, fund) {
         var j = data.indexOf('</h1></font>', i) + 12;
         var title = data.substring(i, j);
 
-        updateFundDiv(fundDiv, title, raw);
+        var updateDate = updateFundDiv(fundDiv, title, raw);
         $(fundDiv).show();
 
         //save
         cache.title = title;
-        cache[yesterday] = raw;
+        cache[updateDate] = raw;
         var json = {};
         json[fund.key] = cache;
         chrome.storage.sync.set(json, function() {

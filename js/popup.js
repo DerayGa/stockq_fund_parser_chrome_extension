@@ -74,12 +74,9 @@ function getYesterday() {
   var yyyy = yesterday.getFullYear();
   var mm = yesterday.getMonth() + 1;
   var dd = yesterday.getDate();
-
+  mm = (mm < 10) ? ('0' + mm) : mm;
+  dd = (dd < 10) ? ('0' + dd) : dd;
   return yyyy + '/' + mm + '/' + dd;
-}
-
-function getFundUpdateDate(raw) {
-123
 }
 
 function loadFund(link, fund) {

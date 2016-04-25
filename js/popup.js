@@ -98,7 +98,7 @@ function loadFund(link, fund) {
       loadByCache(cache.title, cache[yesterday]);
     } else {
       $(fundDiv).hide();
-      loadByAJAX(cache, yesterday);
+      loadByAJAX(yesterday);
     }
   });
 
@@ -107,7 +107,7 @@ function loadFund(link, fund) {
     updateFundDiv(fundDiv, title, raw);
   }
   //--------------
-  function loadByAJAX(cache, yesterday) {
+  function loadByAJAX(yesterday) {
     $.ajax({
       url: link + fund.key,
       type: 'GET',
@@ -124,6 +124,7 @@ function loadFund(link, fund) {
         $(fundDiv).show();
 
         //save
+        var cache = {};
         cache.title = title;
         cache[updateDate] = raw;
         var json = {};

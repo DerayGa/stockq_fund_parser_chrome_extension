@@ -3,29 +3,16 @@ const LINK = 'http://www.stockq.org/funds/fund/';
 
 const createFund = (fund) => {
   const fundList = document.querySelector('#fundList');
+  const checkboxId = `owned${fundList.childNodes.length}`;
 
   const fundDiv = document.createElement('div');
   fundDiv.classList.add('fund');
-
-  const keyInput = document.createElement('input');
-  keyInput.classList.add('key');
-  keyInput.setAttribute('type', 'text');
-
-  const checkboxId = `owned${fundList.childNodes.length}`;
-  const ownedCheckbox = document.createElement('input');
-  ownedCheckbox.classList.add('owned');
-  ownedCheckbox.setAttribute('type', 'checkbox');
-  ownedCheckbox.setAttribute('id', checkboxId);
-
-  const ownedLabel = document.createElement('label');
-  ownedLabel.textContent = chrome.i18n.getMessage('owned');
-  ownedLabel.setAttribute('for', checkboxId);
-  const infoLabel = document.createElement('label');
-
-  fundDiv.appendChild(keyInput);
-  fundDiv.appendChild(ownedCheckbox);
-  fundDiv.appendChild(ownedLabel);
-  fundDiv.appendChild(infoLabel);
+  fundDiv.innerHTML =`
+    <input class='key' type='text'>
+    <input class='owned' type='checkbox' id='${checkboxId}'>
+    <label for='${checkboxId}' >${chrome.i18n.getMessage('owned')}</label>
+    <label class='info' />
+  `;
 
   if (fund) {
     fetch(`${LINK}${fund.key}`)
@@ -34,11 +21,11 @@ const createFund = (fund) => {
       ))
       .then((responseText) => {
         const parsedResponse = (new window.DOMParser()).parseFromString(responseText, "text/html");
-        infoLabel.textContent = parsedResponse.title.split('-')[0];
+        fundDiv.querySelector('.info').textContent = parsedResponse.title.split('-')[0];
       });
-    keyInput.value = fund.key;
+    fundDiv.querySelector('.key').value = fund.key;
     if (fund.owned) {
-      ownedCheckbox.setAttribute('checked', 'checked');
+      fundDiv.querySelector('.owned').setAttribute('checked', 'checked');
     }
   }
   return fundDiv;

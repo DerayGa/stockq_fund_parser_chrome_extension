@@ -1,4 +1,6 @@
-function createFundDiv() {
+const LINK = 'http://www.stockq.org/funds/fund/';
+
+const createFundDiv = () => {
   var content = $('<div class="fund">' +
     '<div class="title"></div>' +
     '<hr>' +
@@ -12,7 +14,7 @@ function createFundDiv() {
   return $(content);
 }
 
-function updateFundDiv(fundDiv, title, raw) {
+const updateFundDiv = (fundDiv, title, raw) => {
   var title = $('h1', $(title)).text();
   raw = $(raw);
 
@@ -42,50 +44,57 @@ function updateFundDiv(fundDiv, title, raw) {
   return update.trim();
 }
 
-function openTab(link) {
+const openTab = (link) => {
   chrome.tabs.create({
     url: link
   });
 }
 
-function restore_options(callback) {
+const restore_options = (callback = () => {} ) => {
   chrome.storage.sync.get({
     fundList: []
   }, callback);
 }
 
-function restore_fund(key, callback) {
-  var json = {};
+const restore_fund = (key, callback = () => {} ) => {
+  const json = {};
   json[key] = {};
   chrome.storage.sync.get(json, callback);
 }
 
-function getYesterday() {
-  var now = new Date();
-  var day = now.getDay();
+const save_options = (fundList, callback = () => {}) => {
+  chrome.storage.sync.set({
+    fundList,
+  }, callback);
+}
 
-  var num = 1;
+const getYesterday = () => {
+  const now = new Date();
+  const day = now.getDay();
+
+  let num = 1;
   if (day == 0)
     num = 2;
   else if (day == 1)
     num = 3;
 
-  var yesterday = new Date(now.getTime() - 1000 * 60 * 60 * 24 * num);
-  var yyyy = yesterday.getFullYear();
-  var mm = yesterday.getMonth() + 1;
-  var dd = yesterday.getDate();
+  const yesterday = new Date(now.getTime() - 1000 * 60 * 60 * 24 * num);
+  const yyyy = yesterday.getFullYear();
+  let mm = yesterday.getMonth() + 1;
+  let dd = yesterday.getDate();
   mm = (mm < 10) ? ('0' + mm) : mm;
   dd = (dd < 10) ? ('0' + dd) : dd;
-  return yyyy + '/' + mm + '/' + dd;
+
+  return `${yyyy}/${mm}/${dd}`;
 }
 
-function loadFund(link, fund) {
+const loadFund = (link, fund) => {
   var fundDiv = createFundDiv();
   $('.fundInfo').append(fundDiv);
 
   if (fund.owned)
     $(fundDiv).addClass('have');
-
+//fundDiv.classList.add('have');
   $(fundDiv).click(function() {
     openTab(link + fund.key);
   });
@@ -103,51 +112,71 @@ function loadFund(link, fund) {
   });
 
   //--------------
-  function loadByCache(title, raw) {
+  const loadByCache = (title, raw) => {
     updateFundDiv(fundDiv, title, raw);
   }
   //--------------
-  function loadByAJAX(yesterday) {
-    $.ajax({
-      url: link + fund.key,
-      type: 'GET',
-      success: function(data) {
-        var i = data.indexOf('<tr class=\'row2\'>');
-        var j = data.indexOf('</tr>', i) + 5;
-        var raw = data.substring(i, j);
+  const loadByAJAX = (yesterday) => {
+    fetch(`${link}${fund.key}`)
+      .then((response) => (
+        response.text()
+      ))
+      .then((responseText) => {
+        let i = responseText.indexOf('<tr class=\'row2\'>');
+        let j = responseText.indexOf('</tr>', i) + 5;
+        const raw = responseText.substring(i, j);
 
-        var i = data.indexOf('<font color="#666666"><h1>');
-        var j = data.indexOf('</h1></font>', i) + 12;
-        var title = data.substring(i, j);
+        i = responseText.indexOf('<font color="#666666"><h1>');
+        j = responseText.indexOf('</h1></font>', i) + 12;
+        const title = responseText.substring(i, j);
 
-        var updateDate = updateFundDiv(fundDiv, title, raw);
+        const updateDate = updateFundDiv(fundDiv, title, raw);
         $(fundDiv).show();
 
         //save
-        var cache = {};
+        const cache = {};
         cache.title = title;
         cache[updateDate] = raw;
-        var json = {};
+        const json = {};
         json[fund.key] = cache;
         chrome.storage.sync.set(json, function() {
         });
-      },
-      /*error: function(data) {
-          console.log(data);
-      }*/
-    });
+      });
   }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  var link = 'http://www.stockq.org/funds/fund/';
 
-  $('footer .options').html(chrome.i18n.getMessage("options"));
+  document.querySelector('footer .options').textContent = chrome.i18n.getMessage("options");
+  document.querySelector('footer .addNew').textContent = chrome.i18n.getMessage("addNew");
+  document.querySelector('footer .addNew').onclick = () => {
+    chrome.tabs.getSelected(null, (tab) => {
+      let tablink = tab.url;
 
-  restore_options(function(items) {
-    var owned = [];
-    var other = [];
-    $.each(items.fundList, function(index, fund) {
+      if (tablink.indexOf(LINK) >= 0) {
+        tablink = tablink.replace(LINK, '');
+
+        restore_options(({ fundList }) => {
+          if(filter = fundList.filter((fund) => (fund.key == tablink)).length == 0) {
+            fundList.push(
+              {
+                key: tablink,
+                owned: true,
+              }
+            );
+
+            save_options(fundList);
+          }
+        });
+      }
+    });
+  };
+
+  restore_options((items) => {
+    const owned = [];
+    const other = [];
+
+    items.fundList.forEach((fund) => {
       if (!fund.key) return;
 
       if (fund.owned)
@@ -156,8 +185,8 @@ document.addEventListener('DOMContentLoaded', function() {
         other.push(fund);
     });
 
-    $.each(owned.concat(other), function(index, fund) {
-      loadFund(link, fund);
+    owned.concat(other).forEach((fund) => {
+      loadFund(LINK, fund);
     });
   });
 });

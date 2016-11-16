@@ -60,3 +60,10 @@ footer a{
 	display: inline-block;
 	color: #2196F3;
 }
+footer .addNew{
+	color: white;
+	border: none;
+	margin-left: 30px;
+	background-color: #4CAF50;
+	size: 18px;
+}

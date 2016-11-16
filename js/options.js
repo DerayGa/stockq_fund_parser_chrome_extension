@@ -5,15 +5,15 @@ const createFund = (fund) => {
   const fundList = document.querySelector('#fundList');
 
   const fundDiv = document.createElement('div');
-  fundDiv.setAttribute('class', 'fund');
+  fundDiv.classList.add('fund');
 
   const keyInput = document.createElement('input');
-  keyInput.setAttribute('class', 'key');
+  keyInput.classList.add('key');
   keyInput.setAttribute('type', 'text');
 
   const checkboxId = `owned${fundList.childNodes.length}`;
   const ownedCheckbox = document.createElement('input');
-  ownedCheckbox.setAttribute('class', 'owned');
+  ownedCheckbox.classList.add('owned');
   ownedCheckbox.setAttribute('type', 'checkbox');
   ownedCheckbox.setAttribute('id', checkboxId);
 

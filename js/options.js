@@ -1,4 +1,5 @@
 const MINIMUM_FUND_AMOUNT = 3;
+const LINK = 'http://www.stockq.org/funds/fund/';
 
 const createFund = (fund) => {
   const fundList = document.querySelector('#fundList');
@@ -19,12 +20,22 @@ const createFund = (fund) => {
   const ownedLabel = document.createElement('label');
   ownedLabel.textContent = chrome.i18n.getMessage('owned');
   ownedLabel.setAttribute('for', checkboxId);
+  const infoLabel = document.createElement('label');
 
   fundDiv.appendChild(keyInput);
   fundDiv.appendChild(ownedCheckbox);
   fundDiv.appendChild(ownedLabel);
+  fundDiv.appendChild(infoLabel);
 
   if (fund) {
+    fetch(`${LINK}${fund.key}`)
+      .then((response) => (
+        response.text()
+      ))
+      .then((responseText) => {
+        const parsedResponse = (new window.DOMParser()).parseFromString(responseText, "text/html");
+        infoLabel.textContent = parsedResponse.title.split('-')[0];
+      });
     keyInput.value = fund.key;
     if (fund.owned) {
       ownedCheckbox.setAttribute('checked', 'checked');
@@ -40,16 +51,18 @@ const getFundList = () => {
   fundList.childNodes.forEach((fundDiv) => {
     const keyInput = fundDiv.querySelector('.key');
     const checked = fundDiv.querySelector('.owned:checked');
-    list.push({
-      key: keyInput.value,
-      owned: (checked) ? (checked.value === 'on') : false,
-    });
+    if (keyInput.value) {
+      list.push({
+        key: keyInput.value,
+        owned: (checked) ? (checked.value === 'on') : false,
+      });
+    }
   });
 
   return list;
 }
 
-function restore_options() {
+const restore_options = () => {
   chrome.storage.sync.get({
     fundList: []
   }, (items) => {
@@ -57,7 +70,7 @@ function restore_options() {
     items.fundList.forEach((fund) => {
       fundList.appendChild(createFund(fund));
     });
-    while(fundList.childNodes.length < MINIMUM_FUND_AMOUNT){
+    while (fundList.childNodes.length < MINIMUM_FUND_AMOUNT) {
       fundList.appendChild(createFund());
     }
   });
@@ -78,7 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
   header.textContent = chrome.i18n.getMessage("fund_list");
   save.textContent = chrome.i18n.getMessage("save");
   add.textContent = chrome.i18n.getMessage("add_fund");
-  save.onclick = () => (save_options());
+  save.onclick = () => (
+    save_options()
+  );
   add.onclick = () => {
     document.querySelector('#fundList').appendChild(createFund());
   };

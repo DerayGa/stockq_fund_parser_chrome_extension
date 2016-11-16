@@ -16,5 +16,8 @@
   },
   "owned": {
     "message": "Owned"
+  },
+  "addNew": {
+    "message": "Add new Fund"
   }
 }

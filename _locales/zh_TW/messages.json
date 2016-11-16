@@ -16,5 +16,8 @@
   },
   "owned": {
     "message": "持有"
+  },
+  "addNew": {
+    "message": "新增基金"
   }
 }

@@ -1,105 +1,87 @@
-function createFund(fund) {
-  var fundDiv = $('<div class="fund">' +
-    '<input class="key" type="text" value=""></input>' +
-    '<label><input class="owned" type="checkbox" checked>' +
-    chrome.i18n.getMessage("owned") +
-    '</label>' +
-    '</div>');
+const MINIMUM_FUND_AMOUNT = 3;
+
+const createFund = (fund) => {
+  const fundList = document.querySelector('#fundList');
+
+  const fundDiv = document.createElement('div');
+  fundDiv.setAttribute('class', 'fund');
+
+  const keyInput = document.createElement('input');
+  keyInput.setAttribute('class', 'key');
+  keyInput.setAttribute('type', 'text');
+
+  const checkboxId = `owned${fundList.childNodes.length}`;
+  const ownedCheckbox = document.createElement('input');
+  ownedCheckbox.setAttribute('class', 'owned');
+  ownedCheckbox.setAttribute('type', 'checkbox');
+  ownedCheckbox.setAttribute('id', checkboxId);
+
+  const ownedLabel = document.createElement('label');
+  ownedLabel.textContent = chrome.i18n.getMessage('owned');
+  ownedLabel.setAttribute('for', checkboxId);
+
+  fundDiv.appendChild(keyInput);
+  fundDiv.appendChild(ownedCheckbox);
+  fundDiv.appendChild(ownedLabel);
 
   if (fund) {
-    $('.key', fundDiv).val(fund.key);
-    $('.owned', fundDiv).prop('checked', fund.owned);
+    keyInput.value = fund.key;
+    if (fund.owned) {
+      ownedCheckbox.setAttribute('checked', 'checked');
+    }
   }
   return fundDiv;
 }
 
-function getFundList() {
-  var list = [];
-  var funds = $('.fund', $('#fundList'));
-  $.each(funds, function(index, fund) {
-    var key = $('.key', $(fund)).val();
-    var owned = $('.owned', $(fund)).is(":checked");
+const getFundList = () => {
+  const list = [];
+  const fundList = document.querySelector('#fundList');
 
-    if (!key) return;
-
+  fundList.childNodes.forEach((fundDiv) => {
+    const keyInput = fundDiv.querySelector('.key');
+    const checked = fundDiv.querySelector('.owned:checked');
     list.push({
-      key: key,
-      owned: owned
+      key: keyInput.value,
+      owned: (checked) ? (checked.value === 'on') : false,
     });
   });
+
   return list;
 }
 
 function restore_options() {
   chrome.storage.sync.get({
     fundList: []
-  }, function(items) {
-    //add default
-    /*if(items.fundList.length == 0){
-      items.fundList.push({
-        key: 'blackrock/BR64.php', //礦業
-        owned: true
-      });
-      items.fundList.push({
-        key: 'jf/J064.php', //巴西
-        owned: true
-      });
-      items.fundList.push({
-        key: 'jf/J007.php', //馬來西亞
-        owned: true
-      });
-      items.fundList.push({
-        key: 'jf/J060.php', //俄羅斯
-        owned: true
-      });
-      items.fundList.push({
-        key: 'blackrock/BR619.php', //A6
-        owned: true
-      });
-      items.fundList.push({
-        key: 'blackrock/BRD05.php', //A8
-        owned: true
-      });
-      items.fundList.push({
-        key: 'jf/J003.php', //印度
-        owned: false
-      });
-      items.fundList.push({
-        key: 'jf/J058.php', //中國
-        owned: false
-      });
-      items.fundList.push({
-        key: 'jf/J004.php', //日本
-        owned: false
-      });
-      items.fundList.push({
-        key: 'jf/J010.php', //菲律賓
-        owned: false
-      });
-    }*/
-
-    var count = Math.max(items.fundList.length, 3);
-
-    for (var i = 0; i < count; i++) {
-      $(fundList).append(createFund(items.fundList[i]));
+  }, (items) => {
+    const fundList = document.querySelector('#fundList');
+    items.fundList.forEach((fund) => {
+      fundList.appendChild(createFund(fund));
+    });
+    while(fundList.childNodes.length < MINIMUM_FUND_AMOUNT){
+      fundList.appendChild(createFund());
     }
   });
 }
 
-function save_options() {
+const save_options = (callback = () => {}) => {
   chrome.storage.sync.set({
     fundList: getFundList()
-  }, function() {
-  });
+  }, callback);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
   document.title = chrome.i18n.getMessage("options_title");
-  $('header').html(chrome.i18n.getMessage("fund_list"));
-  $('#save').html(chrome.i18n.getMessage("save")).click(save_options);
-  $('#add').html(chrome.i18n.getMessage("add_fund")).click(function() {
-    $(fundList).append(createFund());
-  });
+
+  const header = document.querySelector('header');
+  const save = document.querySelector('#save');
+  const add = document.querySelector('#add');
+  header.textContent = chrome.i18n.getMessage("fund_list");
+  save.textContent = chrome.i18n.getMessage("save");
+  add.textContent = chrome.i18n.getMessage("add_fund");
+  save.onclick = () => (save_options());
+  add.onclick = () => {
+    document.querySelector('#fundList').appendChild(createFund());
+  };
 
   restore_options();
 });

@@ -14,7 +14,7 @@ const createFundDiv = () => {
   `;
 
   return fundDiv;
-}
+};
 
 const updateFundDiv = (fundDiv, title, raw) => {
   const titleDiv = document.createElement('div');
@@ -45,31 +45,31 @@ const updateFundDiv = (fundDiv, title, raw) => {
   fundDiv.querySelector('.diff').textContent = `${symbol} ${Math.abs(diff)} (${Math.abs(percent)}%)`;
 
   return update;
-}
+};
 
 const openTab = (link) => {
   chrome.tabs.create({
     url: link
   });
-}
+};
 
 const restore_options = (callback = () => {} ) => {
   chrome.storage.sync.get({
     fundList: []
   }, callback);
-}
+};
 
 const restore_fund = (key, callback = () => {} ) => {
   chrome.storage.sync.get({
     [key]: {}
   }, callback);
-}
+};
 
 const save_options = (fundList, callback = () => {}) => {
   chrome.storage.sync.set({
     fundList,
   }, callback);
-}
+};
 
 const getYesterday = () => {
   const now = new Date();
@@ -89,7 +89,7 @@ const getYesterday = () => {
   dd = (dd < 10) ? ('0' + dd) : dd;
 
   return `${yyyy}/${mm}/${dd}`;
-}
+};
 
 const loadFund = (link, fund) => {
   const yesterday = getYesterday();
@@ -144,7 +144,24 @@ const loadFund = (link, fund) => {
         }, () => {});
       });
   }
-}
+};
+
+const reloadFund = () => {
+  document.querySelector('.fundInfo').innerHTML = '';
+  restore_options((items) => {
+    items.fundList.sort((a, b) => {
+      if (a.owned && !b.owned)
+        return -1;
+      if (!a.owned && b.owned)
+        return 1;
+      return 0;
+    })
+
+    items.fundList.forEach((fund) => {
+      loadFund(LINK, fund);
+    });
+  });
+};
 
 document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('footer .options').textContent = chrome.i18n.getMessage('options');
@@ -165,28 +182,12 @@ document.addEventListener('DOMContentLoaded', function() {
               }
             );
 
-            save_options(fundList);
+            save_options(fundList, reloadFund);
           }
         });
       }
     });
   };
 
-  restore_options((items) => {
-    const owned = [];
-    const other = [];
-
-    items.fundList.forEach((fund) => {
-      if (!fund.key) return;
-
-      if (fund.owned)
-        owned.push(fund);
-      else
-        other.push(fund);
-    });
-
-    owned.concat(other).forEach((fund) => {
-      loadFund(LINK, fund);
-    });
-  });
+  reloadFund();
 });

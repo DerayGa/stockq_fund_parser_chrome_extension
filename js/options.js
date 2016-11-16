@@ -11,7 +11,7 @@ const createFund = (fund) => {
     <input class='key' type='text'>
     <input class='owned' type='checkbox' id='${checkboxId}'>
     <label for='${checkboxId}' >${chrome.i18n.getMessage('owned')}</label>
-    <label class='info' />
+    <label class='info'></label>
   `;
 
   if (fund) {

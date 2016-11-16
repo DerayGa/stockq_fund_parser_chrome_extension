@@ -44,6 +44,7 @@
 	margin: 0px;
 	width: 55%;
 	text-align: left;
+	white-space: nowrap;
 }
 .update{
 	display: inline-block;

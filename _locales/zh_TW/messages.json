@@ -19,5 +19,8 @@
   },
   "addNew": {
     "message": "新增基金"
+  },
+  "loading": {
+    "message": "載入中"
   }
 }

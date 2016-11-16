@@ -1,47 +1,50 @@
 const LINK = 'http://www.stockq.org/funds/fund/';
 
 const createFundDiv = () => {
-  var content = $('<div class="fund">' +
-    '<div class="title"></div>' +
-    '<hr>' +
-    '<div class="info">' +
-    '<span class="value" />' +
-    '<span class="diff" />' +
-    '<span class="update" />' +
-    '</div>' +
-    '</div>');
+  const fundDiv = document.createElement('div');
+  fundDiv.classList.add('fund');
+  fundDiv.innerHTML = `
+    <div class='title'></div>
+    <hr />
+    <div class='info'>
+      <span class='value'></span>
+      <span class='diff'></span>
+      <span class='update'></span>
+    </div>
+  `;
 
-  return $(content);
+  return fundDiv;
 }
 
 const updateFundDiv = (fundDiv, title, raw) => {
-  var title = $('h1', $(title)).text();
-  raw = $(raw);
+  const titleDiv = document.createElement('div');
+  titleDiv.innerHTML = title;
+  const rawDiv = document.createElement('table');
+  rawDiv.innerHTML = raw;
 
-  $('.title', fundDiv).html(title);
-  var tds = $('td', raw);
+  fundDiv.querySelector('.title').textContent = titleDiv.querySelector('h1').textContent;
 
-  var value = $(tds[1]).text();
-  $('.value', fundDiv).text(value);
+  const tds = rawDiv.querySelectorAll('td');
 
-  var diff = parseFloat($(tds[2]).text(), 10);
-  var percent = parseFloat($(tds[3]).text(), 10);
+  fundDiv.querySelector('.value').textContent = tds[1].textContent;
 
-  var update = $(tds[4]).text();
-  $('.update', fundDiv).text(update);
+  const diff = parseFloat(tds[2].textContent, 10);
+  const percent = parseFloat(tds[3].textContent, 10);
 
-  var symbol = ''
+  const update = tds[4].textContent.trim();
+  fundDiv.querySelector('.update').textContent = update;
+
+  let symbol = ''
   if (diff >= 0) {
-    $('.info', fundDiv).addClass('red');
+    fundDiv.querySelector('.info').classList.add('red');
     symbol = '▲';
   } else {
-    $('.info', fundDiv).addClass('green');
+    fundDiv.querySelector('.info').classList.add('green');
     symbol = '▼';
   }
+  fundDiv.querySelector('.diff').textContent = `${symbol} ${Math.abs(diff)} (${Math.abs(percent)}%)`;
 
-  $('.diff', fundDiv).text(symbol + Math.abs(diff) + '(' + Math.abs(percent) + '%)');
-
-  return update.trim();
+  return update;
 }
 
 const openTab = (link) => {
@@ -57,9 +60,9 @@ const restore_options = (callback = () => {} ) => {
 }
 
 const restore_fund = (key, callback = () => {} ) => {
-  const json = {};
-  json[key] = {};
-  chrome.storage.sync.get(json, callback);
+  chrome.storage.sync.get({
+    [key]: {}
+  }, callback);
 }
 
 const save_options = (fundList, callback = () => {}) => {
@@ -89,66 +92,63 @@ const getYesterday = () => {
 }
 
 const loadFund = (link, fund) => {
-  var fundDiv = createFundDiv();
-  $('.fundInfo').append(fundDiv);
+  const yesterday = getYesterday();
+  const fundDiv = createFundDiv();
+  document.querySelector('.fundInfo').appendChild(fundDiv);
 
   if (fund.owned)
-    $(fundDiv).addClass('have');
-//fundDiv.classList.add('have');
-  $(fundDiv).click(function() {
+    fundDiv.classList.add('have');
+
+  fundDiv.onclick = () => {
     openTab(link + fund.key);
-  });
+  }
   //--------------
   restore_fund(fund.key, function(items) {
-    var cache = items[fund.key];
-    var yesterday = getYesterday();
+    const cache = items[fund.key];
 
-    if (cache[yesterday]){
-      loadByCache(cache.title, cache[yesterday]);
+    if (cache[yesterday]) {
+      updateFundDiv(fundDiv, cache.title, cache[yesterday]);
     } else {
-      $(fundDiv).hide();
-      loadByAJAX(yesterday);
+      fundDiv.querySelector('.title').textContent = chrome.i18n.getMessage('loading');
+      loadByAJAX();
     }
   });
 
   //--------------
-  const loadByCache = (title, raw) => {
-    updateFundDiv(fundDiv, title, raw);
-  }
-  //--------------
-  const loadByAJAX = (yesterday) => {
+  const loadByAJAX = () => {
     fetch(`${link}${fund.key}`)
       .then((response) => (
         response.text()
       ))
       .then((responseText) => {
-        let i = responseText.indexOf('<tr class=\'row2\'>');
-        let j = responseText.indexOf('</tr>', i) + 5;
-        const raw = responseText.substring(i, j);
+        const dataStartStr = '<tr class=\'row2\'>';
+        const dataEndStr = '</tr>';
+        const titleStartStr = '<font color="#666666"><h1>';
+        const titleEndStr = '</h1></font>';
 
-        i = responseText.indexOf('<font color="#666666"><h1>');
-        j = responseText.indexOf('</h1></font>', i) + 12;
-        const title = responseText.substring(i, j);
+        let i = responseText.indexOf(dataStartStr);
+        const raw = responseText.substring(i,
+          responseText.indexOf(dataEndStr, i) + dataEndStr.length);
+
+        i = responseText.indexOf(titleStartStr);
+        const title = responseText.substring(i,
+          responseText.indexOf(titleEndStr, i) + titleEndStr.length);
 
         const updateDate = updateFundDiv(fundDiv, title, raw);
-        $(fundDiv).show();
 
-        //save
-        const cache = {};
-        cache.title = title;
-        cache[updateDate] = raw;
-        const json = {};
-        json[fund.key] = cache;
-        chrome.storage.sync.set(json, function() {
-        });
+        chrome.storage.sync.set({
+          [fund.key]: {
+            title,
+            [updateDate]: raw
+          }
+        }, () => {});
       });
   }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-
-  document.querySelector('footer .options').textContent = chrome.i18n.getMessage("options");
-  document.querySelector('footer .addNew').textContent = chrome.i18n.getMessage("addNew");
+  document.querySelector('footer .options').textContent = chrome.i18n.getMessage('options');
+  document.querySelector('footer .addNew').textContent = chrome.i18n.getMessage('addNew');
   document.querySelector('footer .addNew').onclick = () => {
     chrome.tabs.getSelected(null, (tab) => {
       let tablink = tab.url;

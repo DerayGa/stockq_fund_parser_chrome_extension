@@ -19,5 +19,8 @@
   },
   "addNew": {
     "message": "Add new Fund"
+  },
+  "loading": {
+    "message": "Loading"
   }
 }

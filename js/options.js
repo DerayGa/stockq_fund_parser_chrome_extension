@@ -15,14 +15,26 @@ const createFund = (fund) => {
   `;
 
   if (fund) {
-    fetch(`${LINK}${fund.key}`)
-      .then((response) => (
-        response.text()
-      ))
-      .then((responseText) => {
-        const parsedResponse = (new window.DOMParser()).parseFromString(responseText, "text/html");
-        fundDiv.querySelector('.info').textContent = parsedResponse.title.split('-')[0];
-      });
+    restore_fundName((fundName) => {
+      if (fundName[fund.key]) {
+        fundDiv.querySelector('.info').textContent = fundName[fund.key];
+      } else {
+        fetch(`${LINK}${fund.key}`)
+          .then((response) => (
+            response.text()
+          ))
+          .then((responseText) => {
+            const parsedResponse = (new window.DOMParser()).parseFromString(responseText, "text/html");
+            restore_fundName((fundName) => {
+              fundName[fund.key] = parsedResponse.title.split('-')[0];
+              fundDiv.querySelector('.info').textContent = fundName[fund.key];
+
+              save_fundName(fundName);
+            });
+          });
+      }
+    })
+
     fundDiv.querySelector('.key').value = fund.key;
     if (fund.owned) {
       fundDiv.querySelector('.owned').setAttribute('checked', 'checked');
@@ -38,6 +50,7 @@ const getFundList = () => {
   fundList.childNodes.forEach((fundDiv) => {
     const keyInput = fundDiv.querySelector('.key');
     const checked = fundDiv.querySelector('.owned:checked');
+
     if (keyInput.value) {
       list.push({
         key: keyInput.value,
@@ -54,6 +67,7 @@ const restore_options = () => {
     fundList: []
   }, (items) => {
     const fundList = document.querySelector('#fundList');
+    fundList.innerHTML = '';
     items.fundList.forEach((fund) => {
       fundList.appendChild(createFund(fund));
     });
@@ -63,9 +77,23 @@ const restore_options = () => {
   });
 }
 
+const restore_fundName = (callback = () => {}) => {
+  chrome.storage.sync.get({
+    fundName: {}
+  }, (items) => {
+    callback(items.fundName);
+  });
+}
+
 const save_options = (callback = () => {}) => {
   chrome.storage.sync.set({
     fundList: getFundList()
+  }, callback);
+}
+
+const save_fundName = (fundName, callback = () => {}) => {
+  chrome.storage.sync.set({
+    fundName,
   }, callback);
 }
 
@@ -79,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
   save.textContent = chrome.i18n.getMessage("save");
   add.textContent = chrome.i18n.getMessage("add_fund");
   save.onclick = () => (
-    save_options()
+    save_options(restore_options)
   );
   add.onclick = () => {
     document.querySelector('#fundList').appendChild(createFund());

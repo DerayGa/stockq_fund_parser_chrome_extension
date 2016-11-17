@@ -17,12 +17,14 @@ const createFundDiv = () => {
 };
 
 const updateFundDiv = (fundDiv, title, raw) => {
-  const titleDiv = document.createElement('div');
-  titleDiv.innerHTML = title;
+  const tmpDiv = document.createElement('div');
+  tmpDiv.innerHTML = title;
   const rawDiv = document.createElement('table');
   rawDiv.innerHTML = raw;
 
-  fundDiv.querySelector('.title').textContent = titleDiv.querySelector('h1').textContent;
+  const titleDiv = fundDiv.querySelector('.title');
+  titleDiv.textContent = tmpDiv.querySelector('h1').textContent;
+  titleDiv.setAttribute('title', titleDiv.textContent);
 
   const tds = rawDiv.querySelectorAll('td');
 

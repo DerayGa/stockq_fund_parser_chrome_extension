@@ -7,7 +7,6 @@
 	padding:5px;
 	display: inline-block;
 	width: 250px;
-	height: 76px;
 	margin: 1px;
 	text-align: center;
 	cursor: pointer;
@@ -17,6 +16,7 @@
 }
 .info{
 	color:#424242;
+	position: relative;
 }
 .info.green .diff{
 	color:#4CAF50;
@@ -27,19 +27,19 @@
 .title{
 	font-size: 16px;
 	text-align: center;
-	font-weight: bold;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
 .value{
+	font-weight: bold;
 	font-size: 22px;
 	display: inline-block;
 	margin: 0px;
 	width: 45%;
 }
 .diff{
-	font-size: 20px;
+	font-size: 16px;
 	display: inline-block;
 	margin: 0px;
 	width: 55%;
@@ -47,11 +47,12 @@
 	white-space: nowrap;
 }
 .update{
-	display: inline-block;
-	margin-top: 5px;
-	width: 100%;
+	position: absolute;
 	font-size: 12px;
 	text-align: right;
+	color: grey;
+	bottom: 0px;
+	right: 5px;
 }
 footer {
 	text-align: center;

@@ -7,9 +7,11 @@
 	padding:5px;
 	display: inline-block;
 	width: 250px;
+	height: 75px;
 	margin: 1px;
 	text-align: center;
 	cursor: pointer;
+	float: left;
 }
 .fund.have{
 	border-color:#0087dc;
